@@ -1,7 +1,7 @@
 from datetime import datetime
 from pydantic import BaseModel, UUID4,  EmailStr, field_validator
 from pydantic import FieldValidationInfo
-
+from uuid import UUID
 
 class UserBase(BaseModel):
     email: EmailStr
@@ -29,7 +29,13 @@ class User(UserBase):
 
     @field_validator("id")
     def convert_to_str(cls, v, values, **kwargs):
-        return str(v) if v else v
+        # Eğer UUID geçerli bir string formatında ise, onu UUID4'e dönüştür
+        try:
+            if isinstance(v, str):
+                return UUID(v)  # String'i UUID'ye dönüştür
+            return v  # Eğer zaten UUID ise, olduğu gibi döndür
+        except ValueError:
+            raise ValueError(f"Invalid UUID string: {v}")
 
 
 class UserRegister(UserBase):
@@ -93,10 +99,7 @@ class EmailSchema(BaseModel):
     body: MailBodySchema
     class Config:
         from_attributes = True
-# class EmailSchema(BaseModel):
-#     recipients: List[EmailStr]  # ✅ Doğru kullanım
-#     subject: str
-#     body: MailBodySchema
+
 
 
 class MailTaskSchema(BaseModel):
@@ -141,15 +144,28 @@ class OldPasswordErrorSchema(BaseModel):
             raise ValueError("Old password is not corret")
 
 
-class ArticleCreateSchema(BaseModel):
-    title: str
-    content: str
-    class Config:
-        from_attributes = True
-
-class ArticleListScheme(ArticleCreateSchema):
-    id: UUID4
-    author_id: UUID4
-
-    class Config:
-        from_attributes = True
+# class ArticleCreateSchema(BaseModel):
+#     title: str
+#     content: str
+#     class Config:
+#         from_attributes = True
+#
+# class ArticleListScheme(ArticleCreateSchema):
+#     id: UUID4
+#     author_id: UUID4
+#
+#     class Config:
+#         from_attributes = True
+#
+# class AkatarmaCreateSchema(BaseModel):
+#     stok_kodu: str
+#     malzeme_no: str
+#     class Config:
+#         from_attributes = True
+#
+# class AkatarmaListScheme(ArticleCreateSchema):
+#     stok_kodu: str
+#     malzeme_no: str
+#
+#     class Config:
+#         from_attributes = True

@@ -23,8 +23,6 @@ class User(Base):
         server_default=utcnow(), server_onupdate=utcnow(), onupdate=utcnow()
     )
 
-    articles: Mapped[list["Article"]] = relationship(back_populates="author")
-
     @classmethod
     async def find_by_email(cls, db: AsyncSession, email: str):
         query = select(cls).where(cls.email == email)
@@ -48,22 +46,22 @@ class BlackListToken(Base):
     created_at: Mapped[datetime] = mapped_column(server_default=utcnow())
 
 
-class Article(Base):
-    __tablename__ = "sessions"
-    id: Mapped[uuid.UUID] = mapped_column(
-        primary_key=True, index=True, default=uuid.uuid4
-    )
-    created_at: Mapped[datetime] = mapped_column(server_default=utcnow())
-    title: Mapped[str]
-    content: Mapped[str] = mapped_column(Text)
-
-    author_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("users.id", ondelete="CASCADE")
-    )
-    author: Mapped["User"] = relationship(back_populates="articles")
-
-    @classmethod
-    async def find_by_author(cls, db: AsyncSession, author: User):
-        query = select(cls).where(cls.author_id == author.id)
-        result = await db.execute(query)
-        return result.scalars().all()
+# class Article(Base):
+#     __tablename__ = "sessions"
+#     id: Mapped[uuid.UUID] = mapped_column(
+#         primary_key=True, index=True, default=uuid.uuid4
+#     )
+#     created_at: Mapped[datetime] = mapped_column(server_default=utcnow())
+#     title: Mapped[str]
+#     content: Mapped[str] = mapped_column(Text)
+#
+#     author_id: Mapped[uuid.UUID] = mapped_column(
+#         ForeignKey("users.id", ondelete="CASCADE")
+#     )
+#     author: Mapped["User"] = relationship(back_populates="articles")
+#
+#     @classmethod
+#     async def find_by_author(cls, db: AsyncSession, author: User):
+#         query = select(cls).where(cls.author_id == author.id)
+#         result = await db.execute(query)
+#         return result.scalars().all()

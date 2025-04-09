@@ -191,35 +191,35 @@ async def password_update(
 
 
 # GET: Kullanıcının makalelerini getir
-@user_router.get("/articles", response_model=List[schemas.ArticleListScheme])
-async def get_articles(
-    token: str = Depends(oauth2_scheme),
-    db: AsyncSession = Depends(get_db),
-):
-    payload = await decode_access_token(token=token, db=db)
-    user = await models.User.find_by_id(db=db, id=payload["sub"])
-    if not user:
-        raise NotFoundException(detail="User not found")
-
-    articles = await models.Article.find_by_author(db=db, author=user)
-    return [schemas.ArticleListScheme.from_orm(article) for article in articles]
-
-
-# POST: Yeni makale oluştur
-@user_router.post("/articles", response_model=schemas.SuccessResponseScheme, status_code=status.HTTP_201_CREATED)
-async def create_article(
-    data: schemas.ArticleCreateSchema,
-    token: str = Depends(oauth2_scheme),
-    db: AsyncSession = Depends(get_db),
-):
-    payload = await decode_access_token(token=token, db=db)
-    user = await models.User.find_by_id(db=db, id=payload["sub"])
-    if not user:
-        raise NotFoundException(detail="User not found")
-
-    article = models.Article(**data.dict())
-    article.author = user
-
-    await article.save(db=db)
-
-    return {"msg": "Article successfully created"}
+# @user_router.get("/articles", response_model=List[schemas.ArticleListScheme])
+# async def get_articles(
+#     token: str = Depends(oauth2_scheme),
+#     db: AsyncSession = Depends(get_db),
+# ):
+#     payload = await decode_access_token(token=token, db=db)
+#     user = await models.User.find_by_id(db=db, id=payload["sub"])
+#     if not user:
+#         raise NotFoundException(detail="User not found")
+#
+#     articles = await models.Article.find_by_author(db=db, author=user)
+#     return [schemas.ArticleListScheme.from_orm(article) for article in articles]
+#
+#
+# # POST: Yeni makale oluştur
+# @user_router.post("/articles", response_model=schemas.SuccessResponseScheme, status_code=status.HTTP_201_CREATED)
+# async def create_article(
+#     data: schemas.ArticleCreateSchema,
+#     token: str = Depends(oauth2_scheme),
+#     db: AsyncSession = Depends(get_db),
+# ):
+#     payload = await decode_access_token(token=token, db=db)
+#     user = await models.User.find_by_id(db=db, id=payload["sub"])
+#     if not user:
+#         raise NotFoundException(detail="User not found")
+#
+#     article = models.Article(**data.dict())
+#     article.author = user
+#
+#     await article.save(db=db)
+#
+#     return {"msg": "Article successfully created"}
