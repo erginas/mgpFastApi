@@ -8,6 +8,7 @@ from users.core.hash import verify_password
 from users.utils import utcnow
 
 
+
 class User(Base):
     __tablename__ = "users"
     id: Mapped[uuid.UUID] = mapped_column(

@@ -1,20 +1,21 @@
 from fastapi import APIRouter
+from typing import List
+
 from sqlalchemy.testing.suite.test_reflection import users
 
 from alinan_iade.models import Aktarma
 from app.crud import get_all_malzeme
-from typing import List
-
 from malzeme_test.crud import xget_all_malzeme
 from malzeme_test.models import Malzeme
-
 from alinan_iade.crud import get_all_data, insert_data, update_data, delete_data
 
-from users.user_routers import user_router
+
+
 
 router = APIRouter()
 
-router.include_router(user_router)
+
+
 @router.get("/malzemeler", response_model=List[Malzeme])
 def list_malzeme():
     return get_all_malzeme()

@@ -1,56 +1,44 @@
-from typing import Any
-
-import oracledb
 from sqlalchemy import create_engine
-from sqlalchemy import text
-
-from fastapi import HTTPException, status
-from pydantic import PostgresDsn
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import (
-    AsyncAttrs,
-    async_sessionmaker,
-    create_async_engine,
-    AsyncSession,
-)
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import DeclarativeBase
-
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.dialects.oracle import oracledb
 from .core import config
 
+Base = declarative_base()
 
-ORACLE_URL = PostgresDsn.build(
-    #scheme="oracle+asyncpg",
-    user=config.ORACLE_USER,
-    password=config.ORACLE_PASSWORD,
-    host=config.ORACLE_HOST,
-    port=config.ORACLE_PORT,
-    path=f"/{config.ORACLE_DB}",
-)
+# ORM bağlantısı için URL
+ORACLE_URL = f'oracle+oracledb://{"mgp"}:{"mgp"}@{"192.168.0.253/tpsn"}'
 
+# ORM engine ve session
+engine = create_async_engine(ORACLE_URL, echo=True, pool_size=10, max_overflow=20)
 
-engine = create_async_engine(ORACLE_URL, future=True, echo=True)
+SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
-
-SessionFactory = async_sessionmaker(engine, autoflush=False, expire_on_commit=False)
+# Asenkron session factory
+SessionFactory = async_sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 
 
-class Base(AsyncAttrs, DeclarativeBase):
-    async def save(self, db: AsyncSession):
-        """
-        :param db:
-        :return:
-        """
-        try:
-            db.add(self)
-            return await db.commit()
-        except SQLAlchemyError as ex:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=repr(ex)
-            ) from ex
 
-    @classmethod
-    async def find_by_id(cls, db: AsyncSession, id: str):
-        query = select(cls).where(cls.id == id)
-        result = await db.execute(query)
-        return result.scalars().first()
+# Raw SQL bağlantısı
+async def get_raw_connection():
+    """Raw SQL bağlantısı oluşturuyor."""
+    connection = await oracledb.connect(
+        user="mgp",
+        password="mgp",
+        dsn="192.168.0.253/tpsn",
+        async_=True  # Asenkron bağlantı
+    )
+    return connection
+
+
+async def execute_raw_sql(query: str, params: dict = None):
+    """Raw SQL sorgusunu çalıştır."""
+    connection = await get_raw_connection()
+    try:
+        cursor = await connection.cursor()
+        await cursor.execute(query, params)
+        result = await cursor.fetchall()  # Sonuçları al
+        return result
+    finally:
+        await cursor.close()
+        await connection.close()
