@@ -3,7 +3,11 @@ from datetime import datetime
 from sqlalchemy import select, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.ext.asyncio import AsyncSession
-from users.database import Base
+
+from core.database import Base
+#from users.database import Base
+
+
 from users.core.hash import verify_password
 from users.utils import utcnow
 

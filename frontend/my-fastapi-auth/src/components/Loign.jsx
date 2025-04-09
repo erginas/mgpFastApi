@@ -3,28 +3,18 @@ import api from "../api/axios.js";
 import { Link } from "react-router-dom";  // Link import ediliyor
 import logo from "../assets/react.svg";
 
-// const Login = () => {
-//     const [email, setEmail] = useState("");
-//     const [password, setPassword] = useState("");
-//
-//     const handleLogin = async (e) => {
-//         e.preventDefault();
-//         try {
-//             const response = await api.post("/login", {
-//                 email,
-//                 password,
-//             });
-//             console.log("Login success:", response.data);
-//             // Token, yönlendirme, vs.
-//         } catch (error) {
-//             console.error("Login error:", error.response?.data || error.message);
-//         }
-//     };
+import { useNavigate } from "react-router-dom";
+
+
+
+
 
 const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState(null); // Hata durumunu null olarak başlatıyoruz
+
+    const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -36,6 +26,9 @@ const Login = () => {
                 password,
             });
             localStorage.setItem("token", response.data.token); //burasını kontrol et engin
+            localStorage.setItem("userName", email);
+            navigate("/MainLayout");
+            //navigate("/dashboard");
             console.log("Login success:", response.data);
             // Token, yönlendirme, vs.
         } catch (error) {

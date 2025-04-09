@@ -9,7 +9,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import ValidationError
 from starlette import status
 
-from users.dependencies import get_db
+from core.dependencies import get_db
+#from users.dependencies import get_db
+
+
 from users import schemas, models
 from users.core.hash import get_password_hash, verify_password
 from users.core.jwt import (
