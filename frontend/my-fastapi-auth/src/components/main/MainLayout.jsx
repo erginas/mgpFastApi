@@ -31,6 +31,14 @@ const MainLayout = () => {
   const [title, setTitle] = useState("");
   const navigate = useNavigate();
 
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleEdit = (user) => {
+    console.log("Editing user:", user);  // Burada verinin doğru şekilde geldiğini kontrol et
+    setSelectedUser(user);  // Bu user bilgilerini modal'a gönder
+    setIsModalOpen(true);
+  };
 
 
   const modules = [
@@ -104,6 +112,13 @@ const MainLayout = () => {
     // Tarih bilgisini ayarla
     const today = new Date();
     setCurrentDate(today.toLocaleDateString());
+
+
+
+    console.log("Selected User:", selectedUser);
+    if (selectedUser) {
+      setFormData({ ...selectedUser });
+    }
 
     // Ekran boyutuna göre ayarlamalar
     const handleResize = () => {
@@ -289,7 +304,8 @@ const MainLayout = () => {
           isOpen={isUserModalOpen}
           onClose={() => setIsUserModalOpen(false)} // Modalı kapat
           onSubmit={handleUserSubmit} // Form submit işlemi
-          initialData={userInfo} // Kullanıcı bilgileri modalda gösterilecek
+          initialData={selectedUser} // Kullanıcı bilgileri modalda gösterilecek
+          initialValues={selectedUser}
       />
 
     </div>

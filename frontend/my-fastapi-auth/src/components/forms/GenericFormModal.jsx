@@ -6,15 +6,21 @@ const GenericFormModal = ({
   onClose,
   // title,
   // formFields,
-  initialData,
   onSubmit,
-  // submitButtonText = "Kaydet",
+  initialValues
+                            // submitButtonText = "Kaydet",
   // cancelButtonText = "İptal",
   // fetchData, // API'dan veri çekmek için fonksiyon
   // isLoading = false, // Yükleme durumu
   // error = null // Hata durumu
 }) => {
-  const [formData, setFormData] = useState(initialData || {});
+  // const [formData, setFormData] = useState(initialData || {});
+  const [formData, setFormData] = useState( {
+    full_name: "",
+    email: "",
+    title: "",
+    profile_path: ""
+  });
 
   // useEffect(() => {
   //   if (isOpen) {
@@ -32,10 +38,22 @@ const GenericFormModal = ({
   //   }
   // }, [isOpen, fetchData, initialData]);
 
-  useEffect(() => {
-    setFormData(initialData); // Modal açıldığında form verisini güncelle
-  }, [isOpen, initialData]);
+  // useEffect(() => {
+  //   setFormData(initialData); // Modal açıldığında form verisini güncelle
+  // }, [isOpen, initialData]);
 
+  useEffect(() => {
+    // Eğer initialValues varsa, formData'yı bu verilerle doldur.
+    if (initialValues) {
+      console.log("Initial values received:", initialValues);
+      setFormData({
+        full_name: initialValues.full_name || '',
+        email: initialValues.email || '',
+        title: initialValues.title || '',
+        profile_path: initialValues.profile_path || ''
+      });
+    }
+  }, [initialValues]);  // initialValues değiştiğinde useEffect tetiklenir
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -150,7 +168,7 @@ const GenericFormModal = ({
                       type="text"
                       name="full_name"
                       value={formData.full_name || ""}
-                      onChange={handleChange}
+                      onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                       className="mt-1 p-2 w-full border border-gray-300 rounded-md"
                       required
                   />
@@ -162,7 +180,7 @@ const GenericFormModal = ({
                       type="text"
                       name="profile_path"
                       value={formData.profile_path || ""}
-                      onChange={handleChange}
+                      onChange={(e) => setFormData({ ...formData, profile_path: e.target.value })}
                       className="mt-1 p-2 w-full border border-gray-300 rounded-md"
                       required
                   />
@@ -174,7 +192,7 @@ const GenericFormModal = ({
                       type="text"
                       name="title"
                       value={formData.title || ""}
-                      onChange={handleChange}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                       className="mt-1 p-2 w-full border border-gray-300 rounded-md"
                       required
                   />
