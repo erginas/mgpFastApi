@@ -1,24 +1,41 @@
 from datetime import datetime
+from typing import Optional
+
 from pydantic import BaseModel, UUID4,  EmailStr, field_validator
 from pydantic import FieldValidationInfo
 from uuid import UUID
 
+
 class UserBase(BaseModel):
     email: EmailStr
+    profile_path: Optional[str] = None
     full_name: str
 
     class Config:
         from_attributes = True
 
+class UserUpdate(BaseModel):
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    title: Optional[str] = None
+    profile_path: Optional[str] = None
 
-    # def __init__(self, **kwargs):
-    #     print("Veri:", kwargs)  # Debug için
-    #     super().__init__(**kwargs)
+
 
 class UserCreate(UserBase):
     password: str
     class Config:
         from_attributes = True
+
+class UserProfile(BaseModel):
+    id: UUID
+    full_name: str
+    email: str
+    title: Optional[str] = None
+    profile_path: Optional[str] = None
+
+    class Config:
+        orm_mode = True
 
 
 class User(UserBase):

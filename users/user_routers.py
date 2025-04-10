@@ -1,5 +1,7 @@
 from datetime import datetime
+from sqlalchemy.future import select
 from typing import List
+import uuid
 
 from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks, Response, Cookie
 from fastapi.exceptions import RequestValidationError
@@ -23,9 +25,11 @@ from users.core.jwt import (
     add_refresh_token_cookie,
     SUB,
     JTI,
-    EXP,
+    EXP, verify_access_token,
 )
 from users.exceptions import BadRequestException, NotFoundException, ForbiddenException
+from users.models import User
+from users.schemas import UserProfile
 from users.tasks import (
     user_mail_event,
 )
@@ -128,6 +132,62 @@ async def logout(
     await black_listed.save(db=db)
     return {"msg": "Successfully logged out"}
 
+@user_router.get("/me", response_model=schemas.User)
+async def get_my_profile(
+    token: str = Depends(oauth2_scheme),
+    db: AsyncSession = Depends(get_db),
+):
+    payload = await decode_access_token(token=token, db=db)
+    user = await models.User.find_by_id(db=db, id=payload["sub"])
+    if not user:
+        raise NotFoundException(detail="User not found")
+
+    return schemas.User.from_orm(user)
+
+
+@user_router.get("/profile", response_model=UserProfile)
+async def get_user_profile(db: AsyncSession = Depends(get_db)):
+    # SQLAlchemy 2.0 select() kullanımı
+    stmt = select(User).limit(1)  # Burada sadece User modelini seçiyoruz
+    result = await db.execute(stmt)  # Veritabanı üzerinde sorguyu çalıştırıyoruz
+
+    user = result.scalars().first()  # Sonuçtan ilk kullanıcıyı alıyoruz
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return user  # FastAPI, orm_mode sayesinde otomatik dönüşüm yapacak
+
+
+@user_router.put("/profile", response_model=schemas.User)
+async def update_my_profile(
+        data: schemas.UserUpdate,
+        token: str = Depends(oauth2_scheme),
+        db: AsyncSession = Depends(get_db),
+):
+    from uuid import UUID
+    payload = await decode_access_token(token=token, db=db)
+    user = await models.User.find_by_id(db=db, id=UUID(payload["sub"]))
+
+    if not user:
+        raise NotFoundException(detail="User not found")
+
+    # Güncellenebilir tüm alanları tek tek kontrol et
+    if data.title is not None:
+        user.title = data.title
+    if data.profile_path is not None:
+        user.profile_path = data.profile_path
+    if data.full_name is not None:
+        user.full_name = data.full_name
+    # if data.email is not None:
+    #     user.email = data.email
+    # if data.department is not None:
+    #     user.department = data.department
+    # if data.phone is not None:
+    #     user.phone = data.phone
+
+    await user.save(db=db)
+    return schemas.User.from_orm(user)
 
 @user_router.post("/forgot-password", response_model=schemas.SuccessResponseScheme)
 async def forgot_password(
@@ -192,37 +252,3 @@ async def password_update(
 
     return {"msg": "Successfully updated"}
 
-
-# GET: Kullanıcının makalelerini getir
-# @user_router.get("/articles", response_model=List[schemas.ArticleListScheme])
-# async def get_articles(
-#     token: str = Depends(oauth2_scheme),
-#     db: AsyncSession = Depends(get_db),
-# ):
-#     payload = await decode_access_token(token=token, db=db)
-#     user = await models.User.find_by_id(db=db, id=payload["sub"])
-#     if not user:
-#         raise NotFoundException(detail="User not found")
-#
-#     articles = await models.Article.find_by_author(db=db, author=user)
-#     return [schemas.ArticleListScheme.from_orm(article) for article in articles]
-#
-#
-# # POST: Yeni makale oluştur
-# @user_router.post("/articles", response_model=schemas.SuccessResponseScheme, status_code=status.HTTP_201_CREATED)
-# async def create_article(
-#     data: schemas.ArticleCreateSchema,
-#     token: str = Depends(oauth2_scheme),
-#     db: AsyncSession = Depends(get_db),
-# ):
-#     payload = await decode_access_token(token=token, db=db)
-#     user = await models.User.find_by_id(db=db, id=payload["sub"])
-#     if not user:
-#         raise NotFoundException(detail="User not found")
-#
-#     article = models.Article(**data.dict())
-#     article.author = user
-#
-#     await article.save(db=db)
-#
-#     return {"msg": "Article successfully created"}

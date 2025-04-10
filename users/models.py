@@ -1,20 +1,21 @@
 import uuid
+from typing import Optional
+from uuid import UUID
 from datetime import datetime
-from sqlalchemy import select, ForeignKey, Text
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import select, Column, String, text
+from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import Base
-#from users.database import Base
-
-
 from users.core.hash import verify_password
 from users.utils import utcnow
 
 
 
+
 class User(Base):
     __tablename__ = "users"
+
     id: Mapped[uuid.UUID] = mapped_column(
         primary_key=True, index=True, default=uuid.uuid4
     )
@@ -22,15 +23,21 @@ class User(Base):
     full_name: Mapped[str]
     password: Mapped[str]
     is_active: Mapped[bool] = mapped_column(default=False)
-    created_at: Mapped[datetime] = mapped_column(server_default=utcnow())
+    created_at: Mapped[datetime] = mapped_column(server_default=text("CURRENT_TIMESTAMP"))
     updated_at: Mapped[datetime] = mapped_column(
-        server_default=utcnow(), server_onupdate=utcnow(), onupdate=utcnow()
+        server_default=text("CURRENT_TIMESTAMP"),
+        server_onupdate=text("CURRENT_TIMESTAMP"),
+        onupdate=datetime.utcnow
     )
+
+    # DÜZENLENEN ALANLAR:
+    profile_path: Mapped[Optional[str]] = mapped_column(nullable=True)
+    title: Mapped[Optional[str]] = mapped_column(nullable=True)
 
     @classmethod
     async def find_by_email(cls, db: AsyncSession, email: str):
-        query = select(cls).where(cls.email == email)
-        result = await db.execute(query)
+        stmt = select(cls).filter(cls.email == email)
+        result = await db.execute(stmt)
         return result.scalars().first()
 
     @classmethod
@@ -39,6 +46,16 @@ class User(Base):
         if not user or not verify_password(password, user.password):
             return False
         return user
+
+    @classmethod
+    async def find_by_id(cls, db: AsyncSession, id: UUID):
+        result = await db.execute(select(cls).where(cls.id == id))
+        return result.scalar_one_or_none()
+
+    async def save(self, db):
+        db.add(self)
+        await db.commit()
+        await db.refresh(self)
 
 
 class BlackListToken(Base):
@@ -49,23 +66,9 @@ class BlackListToken(Base):
     expire: Mapped[datetime]
     created_at: Mapped[datetime] = mapped_column(server_default=utcnow())
 
+    @classmethod
+    async def find_by_id(cls, db: AsyncSession, id: str):
+        query = select(cls).where(cls.id == id)
+        result = await db.execute(query)
+        return result.scalars().first()
 
-# class Article(Base):
-#     __tablename__ = "sessions"
-#     id: Mapped[uuid.UUID] = mapped_column(
-#         primary_key=True, index=True, default=uuid.uuid4
-#     )
-#     created_at: Mapped[datetime] = mapped_column(server_default=utcnow())
-#     title: Mapped[str]
-#     content: Mapped[str] = mapped_column(Text)
-#
-#     author_id: Mapped[uuid.UUID] = mapped_column(
-#         ForeignKey("users.id", ondelete="CASCADE")
-#     )
-#     author: Mapped["User"] = relationship(back_populates="articles")
-#
-#     @classmethod
-#     async def find_by_author(cls, db: AsyncSession, author: User):
-#         query = select(cls).where(cls.author_id == author.id)
-#         result = await db.execute(query)
-#         return result.scalars().all()

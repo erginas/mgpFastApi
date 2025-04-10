@@ -1,8 +1,10 @@
 import uuid
 import sys
 from datetime import timedelta, datetime, timezone
+from http.client import HTTPException
 from typing import Optional
 
+from cloudinit.reporting.events import status
 from jose import jwt, JWTError
 from fastapi import Response
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -70,7 +72,7 @@ def create_token_pair(user: User) -> TokenPair:
 async def decode_access_token(token: str, db: AsyncSession):
     try:
         payload = jwt.decode(token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
-        black_list_token = await BlackListToken.find_by_id(db=db, id=payload[JTI])
+        black_list_token = await BlackListToken.find_by_id(db=db, id=uuid.UUID(payload[JTI]))
         if black_list_token:
             raise JWTError("Token is blacklisted")
     except JWTError:
@@ -105,3 +107,15 @@ def add_refresh_token_cookie(response: Response, token: str):
         expires=int(exp.timestamp()),
         httponly=True,
     )
+
+# Bu fonksiyon, doğrulama işlemi yapacak
+async def verify_access_token(token: str, db: AsyncSession):
+    """JWT token'ını doğrular ve payload'ı döndürür"""
+    try:
+        payload = await decode_access_token(token, db)
+        return payload  # Token geçerli ise payload'ı döndür
+    except AuthFailedException:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token"
+        )
