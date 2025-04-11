@@ -9,9 +9,6 @@ from malzeme_test.crud import xget_all_malzeme
 from malzeme_test.models import Malzeme
 from alinan_iade.crud import get_all_data, insert_data, update_data, delete_data
 
-
-
-
 router = APIRouter()
 
 

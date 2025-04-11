@@ -3,6 +3,10 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.dialects.oracle import oracledb
 
+import oracledb as oradb
+
+from contextlib import asynccontextmanager
+
 Base = declarative_base()
 
 # ORM bağlantısı için URL
@@ -16,28 +20,33 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 # Asenkron session factory
 SessionFactory = async_sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 
+import oracledb as oradb
+from contextlib import asynccontextmanager
 
 
-# Raw SQL bağlantısı
+@asynccontextmanager
 async def get_raw_connection():
     """Raw SQL bağlantısı oluşturuyor."""
-    connection = await oracledb.connect(
+    # Asenkron bağlantıyı açıyoruz
+    connection = await oradb.connect_async(
         user="mgp",
         password="mgp",
-        dsn="192.168.0.253/tpsn",
-        async_=True  # Asenkron bağlantı
+        dsn="192.168.0.253:1521/tpsn",
     )
-    return connection
-
-
-async def execute_raw_sql(query: str, params: dict = None):
-    """Raw SQL sorgusunu çalıştır."""
-    connection = await get_raw_connection()
     try:
-        cursor = await connection.cursor()
-        await cursor.execute(query, params)
-        result = await cursor.fetchall()  # Sonuçları al
-        return result
+        yield connection
     finally:
-        await cursor.close()
         await connection.close()
+
+
+async def execute_raw_sql(query: str, params: dict = None, fetch_all: bool = True):
+    """Raw SQL sorgusunu çalıştırır ve sonuçları döndürür."""
+    async with get_raw_connection() as connection:
+        async with connection.cursor() as cursor:
+            await cursor.execute(query, params or {})
+
+            if fetch_all:
+                return await cursor.fetchall()
+            else:
+                await connection.commit()
+                return None
