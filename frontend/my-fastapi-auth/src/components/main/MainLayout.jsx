@@ -7,6 +7,7 @@ import {useNavigate} from "react-router-dom";
 import GenericFormModal from "../forms/GenericFormModal.jsx";
 import Dashboard from "../dashboard/Dashboard.jsx";
 import api from "@/api/axios.js";
+import KisiListesi from "@/pages/IK/KisiListesi.jsx";
 
 
 const MainLayout = () => {
@@ -42,12 +43,14 @@ const MainLayout = () => {
     const modules = [
         {id: "dashboard", title: "Dashboard", icon: <LayoutDashboard size={18}/>},
         {id: "stok", title: "Stok", icon: <PackageSearch size={18}/>},
-        {id: "ayarlar", title: "Ayarlar", icon: <Settings size={18}/>}
+        {id: "ayarlar", title: "Ayarlar", icon: <Settings size={18}/>},
+        {id: "kisiler", title: "kisiler", icon: <User size={18}/>},
     ];
 
 
     const moduleComponents = {
-        dashboard: <Dashboard/>
+        dashboard: <Dashboard/>,
+        kisiler:<KisiListesi />,
     };
 
     const openTab = (id) => {
