@@ -8,6 +8,8 @@ import GenericFormModal from "../forms/GenericFormModal.jsx";
 import Dashboard from "../dashboard/Dashboard.jsx";
 import api from "@/api/axios.js";
 import KisiListesi from "@/pages/IK/KisiListesi.jsx";
+import KisiDetay from "@/pages/IK/KisiDetay.jsx";
+import KisiDuzenle from "@/pages/IK/KisiDuzenle.jsx"; // Düzenleme bileşeni
 
 
 const MainLayout = () => {
@@ -17,7 +19,6 @@ const MainLayout = () => {
     const [currentDate, setCurrentDate] = useState("");
     // const [appVersion, setAppVersion] = useState("1.0.0");
     const [isMobile, setIsMobile] = useState(false);
-
 
     const [userInfo, setUserInfo] = useState({
         full_name: "",
@@ -30,14 +31,8 @@ const MainLayout = () => {
     const [userName, setUserName] = useState("");
     const [profilePath, setProfilePath] = useState("");
     const [title, setTitle] = useState("");
+
     const navigate = useNavigate();
-
-
-    const handleEdit = (userInfo) => {
-        console.log("Editing user:", userInfo);  // Burada verinin doğru şekilde geldiğini kontrol et
-        setSelectedUser(userInfo);  // Bu user bilgilerini modal'a gönder
-        setIsUserModalOpen(true);
-    };
 
 
     const modules = [
@@ -47,27 +42,60 @@ const MainLayout = () => {
         {id: "kisiler", title: "kisiler", icon: <User size={18}/>},
     ];
 
-
-    const moduleComponents = {
-        dashboard: <Dashboard/>,
-        kisiler:<KisiListesi />,
-    };
-
-    const openTab = (id) => {
-        if (!activeTabs.includes(id)) {
-            setActiveTabs([...activeTabs, id]);
+    const handleUserSelect = (user, action) => {
+        if (!user) {
+            console.error("Kullanıcı bilgisi boş veya geçersiz.");
+            return;
         }
-        setSelectedTab(id);
-        if (isMobile) setSidebarOpen(false); // Mobilde menüyü otomatik kapat
+
+        const tabId = `${action}-${user.id}`;
+        const tabTitle = action === "detay" ? `${user.ADI} Detayları` : `${user.ADI} Düzenle`;
+
+        console.log("Tab Açılıyor:", tabId, tabTitle, user);
+
+        // İçeriği önce değişkene al, closure ile bağlanıyor
+        const tabContent =
+            action === "detay" ? (
+                <KisiDetay key={tabId} user={user} />
+            ) : (
+                <KisiDuzenle key={tabId} user={user} onSave={() => closeTab(tabId)} />
+            );
+
+        openTab(tabId, tabTitle, tabContent);
     };
 
+    const [moduleComponents, setModuleComponents] = useState({
+        dashboard: <Dashboard />,
+        kisiler: <KisiListesi onSelectUser={handleUserSelect} />
+    });
+
+        // Yeni bir tab açma
+    const openTab = (id, title, content) => {
+        if (!activeTabs.includes(id)) {
+            setActiveTabs((prevTabs) => [...prevTabs, id]);
+            setModuleComponents((prev) => {
+                const updated = { ...prev, [id]: content };
+                // Burada içeriği set ettikten sonra tab'ı seçiyoruz
+                setSelectedTab(id);
+                return updated;
+            });
+        } else {
+            setSelectedTab(id);
+        }
+    };
+
+    // Tab kapatma
     const closeTab = (id) => {
         const filtered = activeTabs.filter((t) => t !== id);
         setActiveTabs(filtered);
         if (selectedTab === id && filtered.length > 0) {
             setSelectedTab(filtered[0]);
         }
+        delete moduleComponents[id]; // Dinamik içeriği kaldır
     };
+
+    // Kullanıcı seçildiğinde yeni bir tab aç
+
 
     const logout = () => {
         localStorage.removeItem("token");
@@ -77,6 +105,12 @@ const MainLayout = () => {
 
     const toggleSidebar = () => {
         setSidebarOpen(!sidebarOpen);
+    };
+
+    const handleEdit = (userInfo) => {
+        console.log("Editing user:", userInfo);  // Burada verinin doğru şekilde geldiğini kontrol et
+        setSelectedUser(userInfo);  // Bu user bilgilerini modal'a gönder
+        setIsUserModalOpen(true);
     };
 
 
@@ -140,8 +174,10 @@ const MainLayout = () => {
         };
     }, [navigate]);
 
+    // KisiListesi'ne props olarak handleUserSelect'i geçir
+    moduleComponents.kisiler = <KisiListesi onSelectUser={handleUserSelect} />;
 
-    const handleUserSubmit = async (formData) => {
+        const handleUserSubmit = async (formData) => {
         console.log("API'ye Gönderilen Veriler:", formData); // Veriyi kontrol et
         try {
             const response = await api.put("/profile", formData); // API'ye PUT isteği gönder
@@ -193,7 +229,7 @@ const MainLayout = () => {
 
             <div className="flex flex-1 overflow-hidden">
                 {/* Sidebar */}
-                <aside
+                {/*<aside
                     className={`bg-sky-600 text-white flex flex-col transition-all duration-300 ease-in-out ${
                         sidebarOpen ? "w-64" : "w-0"
                     }`}
@@ -222,24 +258,65 @@ const MainLayout = () => {
                         </div>
                     </div>
                 </aside>
+*/}
 
+                {/* Sidebar */}
+                <aside
+                    className={`bg-sky-600 text-white flex flex-col transition-all duration-300 ease-in-out ${
+                        sidebarOpen ? "w-64" : "w-0"
+                    }`}
+                >
+                    <div className={`p-4 flex flex-col gap-4 h-full ${!sidebarOpen && "hidden"}`}>
+                        <div className="text-xl font-bold mb-6 text-sky-100">Modüller</div>
+                        {modules.map((mod) => (
+                            <button
+                                key={mod.id}
+                                onClick={() => openTab(mod.id, mod.title, moduleComponents[mod.id])}
+                                className={`flex items-center gap-3 text-left p-3 rounded-lg text-sky-50 hover:bg-sky-500 transition-colors ${
+                                    selectedTab === mod.id ? "bg-sky-500" : ""
+                                }`}
+                            >
+                                {mod.icon}
+                                {mod.title}
+                            </button>
+                        ))}
+                    </div>
+                </aside>
                 {/* Main Area */}
                 <div className="flex-1 flex flex-col bg-white">
-                    {/* Button Bar */}
-                    {/*<div className="flex justify-end bg-white border-b p-3 gap-3">*/}
-                    {/*    <button*/}
-                    {/*        className="px-4 py-2 bg-cyan-400 text-white rounded-lg hover:bg-cyan-500 transition-colors shadow-sm">*/}
-                    {/*        Buton 1*/}
-                    {/*    </button>*/}
-                    {/*    <button*/}
-                    {/*        className="px-4 py-2 bg-teal-400 text-white rounded-lg hover:bg-teal-500 transition-colors shadow-sm">*/}
-                    {/*        Buton 2*/}
-                    {/*    </button>*/}
-                    {/*    <button*/}
-                    {/*        className="px-4 py-2 bg-sky-400 text-white rounded-lg hover:bg-sky-500 transition-colors shadow-sm">*/}
-                    {/*        Buton 3*/}
-                    {/*    </button>*/}
-                    {/*</div>*/}
+
+                    {/*<Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full h-full">*/}
+                    {/*    <TabsList className="flex bg-white border-b p-2 gap-2 overflow-x-auto">*/}
+                    {/*        {activeTabs.map((tab) => (*/}
+                    {/*            <div*/}
+                    {/*                key={tab}*/}
+                    {/*                className={`flex items-center px-4 py-2 rounded-full transition-colors ${*/}
+                    {/*                    selectedTab === tab ? "bg-sky-100 text-sky-700" : "bg-gray-50 text-gray-600"*/}
+                    {/*                }`}*/}
+                    {/*            >*/}
+                    {/*                <TabsTrigger value={tab} className="text-sm font-medium mr-2">*/}
+                    {/*                    {modules.find((m) => m.id === tab)?.title || tab}*/}
+                    {/*                </TabsTrigger>*/}
+                    {/*                <button onClick={() => closeTab(tab)} className="text-gray-500 hover:text-red-400">*/}
+                    {/*                    ✕*/}
+                    {/*                </button>*/}
+                    {/*            </div>*/}
+                    {/*        ))}*/}
+                    {/*    </TabsList>*/}
+
+                    {/*    {activeTabs.map((tab) => (*/}
+                    {/*        <TabsContent key={tab} value={tab} className="p-6 overflow-auto h-full bg-white">*/}
+                    {/*            <motion.div initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}}*/}
+                    {/*                        transition={{duration: 0.3}}>*/}
+                    {/*                <div*/}
+                    {/*                    className="text-2xl font-bold mb-6 text-sky-700">{modules.find((m) => m.id === tab)?.title}</div>*/}
+                    {/*                <div className="text-lg text-gray-600">{moduleComponents[tab] ||*/}
+                    {/*                    <p>Modül bulunamadı</p>}.*/}
+                    {/*                </div>*/}
+                    {/*            </motion.div>*/}
+                    {/*        </TabsContent>*/}
+                    {/*    ))}*/}
+                    {/*</Tabs>*/}
 
                     <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full h-full">
                         <TabsList className="flex bg-white border-b p-2 gap-2 overflow-x-auto">
@@ -259,18 +336,22 @@ const MainLayout = () => {
                                 </div>
                             ))}
                         </TabsList>
-
+                        {console.log("Aktif Tab:", selectedTab)}
                         {activeTabs.map((tab) => (
+
+
                             <TabsContent key={tab} value={tab} className="p-6 overflow-auto h-full bg-white">
-                                <motion.div initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}}
-                                            transition={{duration: 0.3}}>
-                                    <div
-                                        className="text-2xl font-bold mb-6 text-sky-700">{modules.find((m) => m.id === tab)?.title}</div>
-                                    <div className="text-lg text-gray-600">{moduleComponents[tab] ||
-                                        <p>Modül bulunamadı</p>}.
-                                    </div>
+                                {/*{console.log("Rendering tab:", tab, moduleComponents[tab])}*/}
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    {/*<div className="text-lg text-gray-600">{moduleComponents[tab]}</div>*/}
+                                    {moduleComponents[tab] || <p>Modül bulunamadı.</p>}
                                 </motion.div>
                             </TabsContent>
+
                         ))}
                     </Tabs>
                 </div>

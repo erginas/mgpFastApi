@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 import { DataGrid } from "@mui/x-data-grid";
 
-const KisiListesi = () => {
+const KisiListesi = ({ onSelectUser }) => {
     const [kisiler, setKisiler] = useState([]);
     const [filtered, setFiltered] = useState([]);
     const [loading, setLoading] = useState(true);
-    const navigate = useNavigate();
 
     // Filtre alanları
     const [filter, setFilter] = useState({
@@ -22,6 +20,10 @@ const KisiListesi = () => {
         const fetchKisiler = async () => {
             try {
                 const response = await api.get("/ik/kisi-list");
+                if (!response.data || response.data.length === 0) {
+                    console.error("API'den gelen veri boş.");
+                    return;
+                }
                 setKisiler(response.data);
                 setFiltered(response.data); // Başlangıçta tüm veriyi göster
             } catch (error) {
@@ -45,20 +47,52 @@ const KisiListesi = () => {
         setFiltered(filteredData);
     }, [filter, kisiler]);
 
-    // Filtre inputlarını dinleme
-    const handleChange = (e) => {
-        setFilter({ ...filter, [e.target.name]: e.target.value });
+    // Çift tıklama işlevi
+    const handleRowDoubleClick = (params) => {
+        if (!params.row) {
+            console.error("Seçilen kişi bilgisi bulunamadı.");
+            return;
+        }
+        console.log("Seçilen Kişi:", params.row); // Seçilen kişiyi kontrol et
+        onSelectUser(params.row, "detay"); // Detay tabı aç
     };
 
-    // Satır tıklama işlevi
-    const handleRowClick = (params) => {
-        navigate(`/ik/kisi-detay/${params.row.id}`);
+    // Sağ tıklama işlevi
+    const [contextMenu, setContextMenu] = useState(null);
+
+    const handleContextMenu = (event, params) => {
+        event.preventDefault();
+        if (!params.row) {
+            console.error("Seçilen kişi bilgisi bulunamadı.");
+            return;
+        }
+        console.log("Sağ Tıklanan Kişi:", params.row); // Sağ tıklanan kişiyi kontrol et
+        setContextMenu(
+            contextMenu === null
+                ? {
+                    mouseX: event.clientX + 2,
+                    mouseY: event.clientY - 6,
+                    rowData: params.row
+                }
+                : null
+        );
+    };
+
+    const handleEditClick = () => {
+        if (!contextMenu?.rowData) {
+            console.error("Seçilen kişi bilgisi bulunamadı.");
+            return;
+        }
+        console.log("Düzenlenecek Kişi:", contextMenu.rowData); // Düzenlenecek kişiyi kontrol et
+        onSelectUser(contextMenu.rowData, "duzenle"); // Düzenleme tabı aç
+        setContextMenu(null);
     };
 
     if (loading) return <p className="text-center mt-10">Yükleniyor...</p>;
 
     // DataGrid için sütun tanımları
     const columns = [
+        { field: "id", headerName: "ID", width: 80 },
         { field: "ADI", headerName: "Ad", width: 150 },
         { field: "SOYADI", headerName: "Soyad", width: 150 },
         { field: "KIMLIK_NO", headerName: "Kimlik No", width: 150 },
@@ -83,7 +117,7 @@ const KisiListesi = () => {
                     name="ad"
                     placeholder="Ad"
                     value={filter.ad}
-                    onChange={handleChange}
+                    onChange={(e) => setFilter({ ...filter, ad: e.target.value })}
                     className="p-2 border rounded"
                 />
                 <input
@@ -91,7 +125,7 @@ const KisiListesi = () => {
                     name="soyad"
                     placeholder="Soyad"
                     value={filter.soyad}
-                    onChange={handleChange}
+                    onChange={(e) => setFilter({ ...filter, soyad: e.target.value })}
                     className="p-2 border rounded"
                 />
                 <input
@@ -99,7 +133,7 @@ const KisiListesi = () => {
                     name="kimlik_no"
                     placeholder="Kimlik No"
                     value={filter.kimlik_no}
-                    onChange={handleChange}
+                    onChange={(e) => setFilter({ ...filter, kimlik_no: e.target.value })}
                     className="p-2 border rounded"
                 />
                 <input
@@ -107,7 +141,7 @@ const KisiListesi = () => {
                     name="birim_no"
                     placeholder="Birim No"
                     value={filter.birim_no}
-                    onChange={handleChange}
+                    onChange={(e) => setFilter({ ...filter, birim_no: e.target.value })}
                     className="p-2 border rounded"
                 />
             </div>
@@ -119,7 +153,8 @@ const KisiListesi = () => {
                     columns={columns}
                     pageSize={5}
                     rowsPerPageOptions={[5, 10, 20]}
-                    onRowClick={handleRowClick}
+                    onRowDoubleClick={handleRowDoubleClick}
+                    onRowContextMenu={(event, params) => handleContextMenu(event, params)}
                     disableSelectionOnClick
                     loading={loading}
                     localeText={{
@@ -127,6 +162,29 @@ const KisiListesi = () => {
                     }}
                 />
             </div>
+
+            {/* Sağ Tıklama Menüsü */}
+            {contextMenu && (
+                <div
+                    style={{
+                        position: "absolute",
+                        top: contextMenu.mouseY,
+                        left: contextMenu.mouseX,
+                        backgroundColor: "#fff",
+                        boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+                        padding: "8px",
+                        borderRadius: "4px",
+                        zIndex: 1000
+                    }}
+                >
+                    <button
+                        onClick={handleEditClick}
+                        style={{ display: "block", width: "100%", padding: "8px", textAlign: "left" }}
+                    >
+                        Düzenle
+                    </button>
+                </div>
+            )}
         </div>
     );
 };
