@@ -43,6 +43,10 @@ const MainLayout = () => {
     const [altTabs, setAltTabs] = useState({});
 
 
+
+
+
+
     const modules = [
         { id: "dashboard", title: "Dashboard", icon: <LayoutDashboard size={18} /> },
         { id: "stok", title: "Stok", icon: <PackageSearch size={18} /> },

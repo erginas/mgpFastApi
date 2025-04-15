@@ -9,4 +9,4 @@ python-multipart
 sqlalchemy
 pydantic[email]
 email-validator
-pendulum
+#pendulum #windows da çalşmıyor

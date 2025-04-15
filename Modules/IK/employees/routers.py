@@ -2,8 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
-from core.database import SessionLocal
-from core.dependencies import get_db
+from core.database import async_sessionmaker as get_db
 from .crud import get_employees, create_employee, get_employee, update_employee, delete_employee
 from .schemas import EmployeeCreate, EmployeeUpdate, EmployeeOut
 #from database import SessionLocal  # Veritabanı bağlantısını import ediyoruz

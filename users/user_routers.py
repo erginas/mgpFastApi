@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import ValidationError
 from starlette import status
 
-from core.dependencies import get_db
+from core.database import SessionFactory as get_db
 #from users.dependencies import get_db
 
 

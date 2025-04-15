@@ -1,64 +1,37 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useState, useContext } from "react";
 
+// TabContext
 const TabContext = createContext();
 
 export const TabProvider = ({ children }) => {
-    const [mainTabs, setMainTabs] = useState([
-        { id: "dashboard", title: "Dashboard", component: "Dashboard" }
-    ]);
-    const [activeMainTab, setActiveMainTab] = useState("dashboard");
+    const [mainTabs, setMainTabs] = useState([]); // Sekme listesini tutuyor
+    const [selectedTab, setSelectedTab] = useState(null); // Seçili sekmeyi tutuyor
 
-    const [altTabs, setAltTabs] = useState({});
-    const [activeAltTab, setActiveAltTab] = useState({});
-
-    // Ana sekme ekle
-    const addMainTab = (tab) => {
-        setMainTabs((prev) => {
-            if (!prev.find((t) => t.id === tab.id)) return [...prev, tab];
-            return prev;
-        });
-        setActiveMainTab(tab.id);
+    // Tab ekleme fonksiyonu
+    const openTab = (id, title) => {
+        // Eğer bu sekme zaten yoksa, listeye ekle
+        if (!mainTabs.find((tab) => tab.id === id)) {
+            setMainTabs((prevTabs) => [
+                ...prevTabs,
+                { id, title },
+            ]);
+        }
+        setSelectedTab(id); // Tab açıldığında aktif tab'ı ayarla
     };
 
-    // Alt sekme ekle
-    const addAltTab = (moduleId, tab) => {
-        setAltTabs((prev) => {
-            const moduleTabs = prev[moduleId] || [];
-            const exists = moduleTabs.find((t) => t.id === tab.id);
-            if (exists) return prev;
-            return {
-                ...prev,
-                [moduleId]: [...moduleTabs, tab]
-            };
-        });
-        setActiveAltTab((prev) => ({ ...prev, [moduleId]: tab.id }));
-    };
-
-    const removeMainTab = (tabId) => {
-        setMainTabs((prev) => prev.filter((t) => t.id !== tabId));
-    };
-
-    const removeAltTab = (moduleId, tabId) => {
-        setAltTabs((prev) => {
-            const filtered = (prev[moduleId] || []).filter((t) => t.id !== tabId);
-            return { ...prev, [moduleId]: filtered };
-        });
+    // Tab kapama fonksiyonu
+    const closeTab = (id) => {
+        setMainTabs((prevTabs) => prevTabs.filter((tab) => tab.id !== id));
     };
 
     return (
         <TabContext.Provider
             value={{
                 mainTabs,
-                activeMainTab,
-                setActiveMainTab,
-                addMainTab,
-                removeMainTab,
-
-                altTabs,
-                activeAltTab,
-                setActiveAltTab,
-                addAltTab,
-                removeAltTab
+                selectedTab,
+                setSelectedTab,
+                openTab,
+                closeTab,
             }}
         >
             {children}
@@ -66,4 +39,5 @@ export const TabProvider = ({ children }) => {
     );
 };
 
+// Custom hook ile context'e erişim
 export const useTabContext = () => useContext(TabContext);

@@ -2,7 +2,6 @@ from fastapi import APIRouter, HTTPException, FastAPI
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, Dict, Any
-import pendulum
 
 # router = APIRouter()
 

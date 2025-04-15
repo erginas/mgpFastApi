@@ -1,26 +1,42 @@
 import React from "react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useTabContext } from "@/contexts/TabContext";
 
-const AltTabs = ({ tabs, activeAltTab, setActiveAltTab }) => {
-    if (!tabs || tabs.length === 0) return null;
+const AltTabs = () => {
+    const { mainTabs, selectedTab, closeTab } = useTabContext();
 
     return (
-        <div className="mt-4">
-            <Tabs value={activeAltTab} onValueChange={setActiveAltTab}>
-                <TabsList className="flex gap-2 bg-sky-100 p-2 rounded shadow">
-                    {tabs.map((tab) => (
-                        <TabsTrigger key={tab.key} value={tab.key}>
-                            {tab.label}
-                        </TabsTrigger>
-                    ))}
-                </TabsList>
-
-                {tabs.map((tab) => (
-                    <TabsContent key={tab.key} value={tab.key}>
-                        {tab.component}
-                    </TabsContent>
+        <div className="w-full">
+            <div className="flex gap-2 p-2 border-b bg-white">
+                {mainTabs.map((tab) => (
+                    <div
+                        key={tab.id}
+                        className={`text-sm font-medium py-2 px-4 rounded-md cursor-pointer ${
+                            selectedTab === tab.id ? "bg-sky-500 text-white" : "bg-gray-100 text-gray-600"
+                        }`}
+                        onClick={() => {
+                            // Aktif tabı seçmek
+                        }}
+                    >
+                        {tab.title}
+                        <span
+                            onClick={() => closeTab(tab.id)}
+                            className="ml-2 text-xs text-gray-500 cursor-pointer"
+                        >
+                            X
+                        </span>
+                    </div>
                 ))}
-            </Tabs>
+            </div>
+
+            <div className="p-4 bg-white">
+                {selectedTab ? (
+                    <div>
+                        {/* Tab içeriği burada render edilecek */}
+                    </div>
+                ) : (
+                    <p>Alt Sekme İçeriği Bulunamadı.</p>
+                )}
+            </div>
         </div>
     );
 };

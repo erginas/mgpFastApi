@@ -4,10 +4,11 @@ from datetime import timedelta, datetime, timezone
 from http.client import HTTPException
 from typing import Optional
 
-from cloudinit.reporting.events import status
+# from cloudinit.reporting.events import status
 from jose import jwt, JWTError
 from fastapi import Response
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette import status
 
 from . import config
 from users.schemas import User, TokenPair, JwtTokenSchema

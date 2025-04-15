@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 
-from core.dependencies import get_db, execute_raw_sql
+from core.dependencies import  execute_raw_sql
 from .models import Kisi
 
 from fastapi import HTTPException, Query
@@ -18,24 +18,11 @@ logging.basicConfig(level=logging.DEBUG)
 async def kisi_listesi(
         adi: Optional[str] = Query(None, description="Kişinin adı"),
         soyadi: Optional[str] = Query(None, description="Kişinin soyadı"),
+        kimlikno: Optional[int] = Query(None, description="Kişinin Kimlik Numarası" ),
         page: int = Query(1, ge=1, description="Sayfa numarası"),
         limit: int = Query(10, ge=1, le=100, description="Her sayfada gösterilecek kayıt sayısı")
 ) -> List[Kisi]:
-    """
-    Veritabanından kişi listesini çeker ve Kisi modeline dönüştürür.
 
-    Args:
-        adi (Optional[str]): Kişinin adı (filtreleme için).
-        soyadi (Optional[str]): Kişinin soyadı (filtreleme için).
-        page (int): Sayfa numarası (varsayılan 1).
-        limit (int): Her sayfada gösterilecek kayıt sayısı (varsayılan 10, maksimum 100).
-
-    Returns:
-        List[Kisi]: Kişi listesi (Kisi modeli formatında).
-
-    Raises:
-        HTTPException: Eğer kişi bulunamazsa veya dönüşüm hatası olursa.
-    """
     try:
         # Temel sorgu
         query = "SELECT * FROM Kisi WHERE 1=1"
@@ -45,9 +32,14 @@ async def kisi_listesi(
         if adi:
             query += " AND ADI = :adi"
             params["adi"] = adi
+
         if soyadi:
             query += " AND SOYADI = :soyadi"
             params["soyadi"] = soyadi
+
+        if kimlikno:
+            query += " AND KIMLIK_NO = :kimlikno"
+            params["KIMLIK_NO"] = kimlikno
 
         # Paginasyon
         offset = (page - 1) * limit

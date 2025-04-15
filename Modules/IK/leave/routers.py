@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from . import models, schemas
-from core.dependencies import get_db
+from core.database import SessionFactory as get_db
 
 
 router = APIRouter()

@@ -1,4 +1,13 @@
 import React from "react";
+
+const Dashboard = () => {
+  return <div className="text-xl font-semibold">📊 Dashboard Görünümü</div>;
+};
+
+export default Dashboard;
+
+/*
+import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { User, Package, Activity } from "lucide-react";
@@ -67,3 +76,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+*/
