@@ -2,19 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
-# from core.database import SessionLocal
-#from core.dependencies import get_db
 from .crud import kisi_listesi
 from .models import Kisi
-
-# from .schemas import EmployeeCreate, EmployeeUpdate, EmployeeOut
-#from database import SessionLocal  # Veritabanı bağlantısını import ediyoruz
-
-# Router oluşturuyoruz
-
 router = APIRouter()
-
-# Dependency: Veritabanı bağlantısı
 
 
 # Yeni çalışan oluştur

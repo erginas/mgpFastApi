@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.DEBUG)
 async def kisi_listesi(
         adi: Optional[str] = Query(None, description="Kişinin adı"),
         soyadi: Optional[str] = Query(None, description="Kişinin soyadı"),
-        kimlikno: Optional[int] = Query(None, description="Kişinin Kimlik Numarası" ),
+        kimlik_no: Optional[int] = Query(None, description="Kişinin Kimlik Numarası"),
         page: int = Query(1, ge=1, description="Sayfa numarası"),
         limit: int = Query(10, ge=1, le=100, description="Her sayfada gösterilecek kayıt sayısı")
 ) -> List[Kisi]:
@@ -37,9 +37,9 @@ async def kisi_listesi(
             query += " AND SOYADI = :soyadi"
             params["soyadi"] = soyadi
 
-        if kimlikno:
-            query += " AND KIMLIK_NO = :kimlikno"
-            params["KIMLIK_NO"] = kimlikno
+        if kimlik_no:
+            query += " AND KIMLIK_NO = :kimlik_no"
+            params["kimlik_no"] = kimlik_no  # Note: Changed from "KIMLIK_NO" to match the parameter name
 
         # Paginasyon
         offset = (page - 1) * limit
@@ -51,8 +51,8 @@ async def kisi_listesi(
         logging.debug(f"Sorgu: {query}")
         logging.debug(f"Parametreler: {params}")
 
-        # Sorguyu çalıştır
-        result = await execute_raw_sql(text(query), params)
+        # Sorguyu çalıştır - pass the raw string directly
+        result = await execute_raw_sql(query, params)
 
         # Sonuç boşsa hata fırlat
         if not result:

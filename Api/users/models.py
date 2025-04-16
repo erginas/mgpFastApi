@@ -57,6 +57,8 @@ class User(Base):
         await db.commit()
         await db.refresh(self)
 
+    # class Config:
+    #     orm_mode = True
 
 class BlackListToken(Base):
     __tablename__ = "blacklisttokens"

@@ -4,7 +4,6 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.dialects.oracle import oracledb
 
 import oracledb as oradb
-
 from contextlib import asynccontextmanager
 
 Base = declarative_base()
@@ -20,9 +19,6 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 # Asenkron session factory
 SessionFactory = async_sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
-
-import oracledb as oradb
-from contextlib import asynccontextmanager
 
 
 @asynccontextmanager

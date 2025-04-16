@@ -13,6 +13,8 @@ class UserBase(BaseModel):
 
     class Config:
         from_attributes = True
+        orm_mode = True
+
 
 class UserUpdate(BaseModel):
     full_name: Optional[str] = None
@@ -43,6 +45,7 @@ class User(UserBase):
 
     class Config:
         from_attributes = True
+        orm_mode = True
 
     @field_validator("id")
     def convert_to_str(cls, v, values, **kwargs):

@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import ValidationError
 from starlette import status
 
-from core.database import SessionFactory as get_db
+from core.database import SessionFactory #as get_db
 #from users.dependencies import get_db
 
 
@@ -44,14 +44,14 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 async def register(
     data: schemas.UserRegister,
     bg_task: BackgroundTasks,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(SessionFactory),
 ):
     user = await models.User.find_by_email(db=db, email=data.email)
     if user:
         raise HTTPException(status_code=400, detail="Email has already registered")
 
     # Hash password
-    user_data = data.dict(exclude={"confirm_password"})
+    user_data = data.model_dump(exclude={"confirm_password"})
     user_data["password"] = get_password_hash(user_data["password"])
 
     # Create user instance
@@ -79,24 +79,18 @@ async def register(
 async def login(
     data: schemas.UserLogin,
     response: Response,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(SessionFactory),
 ):
     user = await models.User.authenticate(
         db=db, email=data.email, password=data.password
     )
-
     if not user:
         raise BadRequestException(detail="Incorrect email or password")
-
     if not user.is_active:
         raise ForbiddenException()
-
-    user = schemas.User.from_orm(user)
-
+    user = schemas.User.model_config(user)
     token_pair = create_token_pair(user=user)
-
     add_refresh_token_cookie(response=response, token=token_pair.refresh.token)
-
     return {"token": token_pair.access.token}
 
 
@@ -108,7 +102,7 @@ async def refresh(refresh: str = Cookie(None)):
 
 
 @user_router.get("/verify", response_model=schemas.SuccessResponseScheme)
-async def verify(token: str, db: AsyncSession = Depends(get_db)):
+async def verify(token: str, db: AsyncSession = Depends(SessionFactory)):
     payload = await decode_access_token(token=token, db=db)
     user = await models.User.find_by_id(db=db, id=payload[SUB])
     if not user:
@@ -122,7 +116,7 @@ async def verify(token: str, db: AsyncSession = Depends(get_db)):
 @user_router.post("/logout", response_model=schemas.SuccessResponseScheme)
 async def logout(
     token: str = Depends(oauth2_scheme),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(SessionFactory),
 ):
     payload = await decode_access_token(token=token, db=db)
     black_listed = models.BlackListToken(
@@ -135,7 +129,7 @@ async def logout(
 @user_router.get("/me", response_model=schemas.User)
 async def get_my_profile(
     token: str = Depends(oauth2_scheme),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(SessionFactory),
 ):
     payload = await decode_access_token(token=token, db=db)
     user = await models.User.find_by_id(db=db, id=payload["sub"])
@@ -146,7 +140,7 @@ async def get_my_profile(
 
 
 @user_router.get("/profile", response_model=UserProfile)
-async def get_user_profile(db: AsyncSession = Depends(get_db)):
+async def get_user_profile(db: AsyncSession = Depends(SessionFactory)):
     # SQLAlchemy 2.0 select() kullanımı
     stmt = select(User).limit(1)  # Burada sadece User modelini seçiyoruz
     result = await db.execute(stmt)  # Veritabanı üzerinde sorguyu çalıştırıyoruz
@@ -163,7 +157,7 @@ async def get_user_profile(db: AsyncSession = Depends(get_db)):
 async def update_my_profile(
         data: schemas.UserUpdate,
         token: str = Depends(oauth2_scheme),
-        db: AsyncSession = Depends(get_db),
+        db: AsyncSession = Depends(SessionFactory),
 ):
     from uuid import UUID
     payload = await decode_access_token(token=token, db=db)
@@ -193,7 +187,7 @@ async def update_my_profile(
 async def forgot_password(
     data: schemas.ForgotPasswordSchema,
     bg_task: BackgroundTasks,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(SessionFactory),
 ):
     user = await models.User.find_by_email(db=db, email=data.email)
     if user:
@@ -213,7 +207,7 @@ async def forgot_password(
 async def password_reset_token(
     token: str,
     data: schemas.PasswordResetSchema,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(SessionFactory),
 ):
     payload = await decode_access_token(token=token, db=db)
     user = await models.User.find_by_id(db=db, id=payload[SUB])
@@ -230,7 +224,7 @@ async def password_reset_token(
 async def password_update(
     data: schemas.PasswordUpdateSchema,
     token: str = Depends(oauth2_scheme),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(SessionFactory),
 ):
     payload = await decode_access_token(token=token, db=db)
     user = await models.User.find_by_id(db=db, id=payload["sub"])
