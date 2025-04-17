@@ -1,0 +1,47 @@
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import String, Integer, Float, DateTime
+from sqlalchemy.orm import declarative_base
+
+Base = declarative_base()
+
+class TakipliKonu(Base):
+    __tablename__ = 'takipli_konu'
+
+    takip_yil: Mapped[Optional[Float]] = mapped_column(Float, nullable=False)
+    takip_ay: Mapped[Optional[Float]] = mapped_column(Float, nullable=False)
+    takip_no: Mapped[Optional[Float]] = mapped_column(Float, nullable=False)
+    cesidi: Mapped[Optional[String]] = mapped_column(String, nullable=False)
+    yoneten_kimlik: Mapped[Optional[Float]] = mapped_column(Float)
+    cozen_kimlik: Mapped[Optional[Float]] = mapped_column(Float)
+    sorumlu_birim: Mapped[Optional[Integer]] = mapped_column(Integer)
+    sorunlu_birim: Mapped[Optional[Integer]] = mapped_column(Integer)
+    bagimli_takip_yil: Mapped[Optional[Float]] = mapped_column(Float)
+    bagimli_takip_ay: Mapped[Optional[Float]] = mapped_column(Float)
+    bagimli_takip: Mapped[Optional[Float]] = mapped_column(Float)
+    bagimli_cesidi: Mapped[Optional[String]] = mapped_column(String)
+    aciklama: Mapped[Optional[String]] = mapped_column(String)
+    durumu: Mapped[Optional[String]] = mapped_column(String)
+    ilk_termin: Mapped[Optional[DateTime]] = mapped_column(DateTime)
+    gecerli_termin: Mapped[Optional[DateTime]] = mapped_column(DateTime)
+    cozum: Mapped[Optional[String]] = mapped_column(String)
+    referans: Mapped[Optional[String]] = mapped_column(String)
+    acilma_tarihi: Mapped[Optional[DateTime]] = mapped_column(DateTime)
+    kapanma_tarihi: Mapped[Optional[DateTime]] = mapped_column(DateTime)
+    oncelik: Mapped[Optional[String]] = mapped_column(String)
+    toplanti_yil: Mapped[Optional[Float]] = mapped_column(Float)
+    toplanti_no: Mapped[Optional[Float]] = mapped_column(Float)
+    kisa_konu: Mapped[Optional[String]] = mapped_column(String)
+    cozumleme_tarihi: Mapped[Optional[DateTime]] = mapped_column(DateTime)
+    sira_no: Mapped[Optional[Integer]] = mapped_column(Integer)
+    ekleyen_kullanici_kimlik_no: Mapped[Optional[String]] = mapped_column(String)
+    ensonguncelleyen_kullanici_kimlik_no: Mapped[Optional[String]] = mapped_column(String)
+    eklenme_zamani: Mapped[Optional[DateTime]] = mapped_column(DateTime)
+    enson_guncellenme_zamani: Mapped[Optional[DateTime]] = mapped_column(DateTime)
+    mac_address: Mapped[Optional[String]] = mapped_column(String)
+    guncelleyen_mac_address: Mapped[Optional[String]] = mapped_column(String)
+    kisi: Mapped[Optional['Kisi']] = relationship(back_populates='takipli_konu')
+    kisi_1: Mapped[Optional['Kisi']] = relationship(back_populates='takipli_konu')
+    organizasyon_birimi: Mapped[Optional['OrganizasyonBirimi']] = relationship(back_populates='takipli_konu')
+    organizasyon_birimi_1: Mapped[Optional['OrganizasyonBirimi']] = relationship(back_populates='takipli_konu')
+    takipli_konu: Mapped[Optional['TakipliKonu']] = relationship(back_populates='takipli_konu')
+    toplanti_maddesi: Mapped[Optional['ToplantiMaddesi']] = relationship(back_populates='takipli_konu')

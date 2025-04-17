@@ -1,0 +1,130 @@
+from pydantic import BaseModel
+from typing import Optional
+
+class SysExportFull01Base(BaseModel):
+    abort_step: Optional[Integer] = None
+    access_method: Optional[String] = None
+    ancestor_object_name: Optional[String] = None
+    ancestor_object_schema: Optional[String] = None
+    ancestor_object_type: Optional[String] = None
+    ancestor_process_order: Optional[Integer] = None
+    base_object_name: Optional[String] = None
+    base_object_schema: Optional[String] = None
+    base_object_type: Optional[String] = None
+    base_process_order: Optional[Integer] = None
+    block_size: Optional[Integer] = None
+    cluster_ok: Optional[Integer] = None
+    completed_bytes: Optional[Integer] = None
+    completed_rows: Optional[Integer] = None
+    completion_time: Optional[DateTime] = None
+    control_queue: Optional[String] = None
+    creation_level: Optional[Integer] = None
+    creation_time: Optional[DateTime] = None
+    cumulative_time: Optional[Integer] = None
+    data_buffer_size: Optional[Integer] = None
+    data_io: Optional[Integer] = None
+    dataobj_num: Optional[Integer] = None
+    db_version: Optional[String] = None
+    degree: Optional[Integer] = None
+    domain_process_order: Optional[Integer] = None
+    dump_allocation: Optional[Integer] = None
+    dump_fileid: Optional[Integer] = None
+    dump_length: Optional[Integer] = None
+    dump_orig_length: Optional[Integer] = None
+    dump_position: Optional[Integer] = None
+    duplicate: Optional[Integer] = None
+    elapsed_time: Optional[Integer] = None
+    error_count: Optional[Integer] = None
+    extend_size: Optional[Integer] = None
+    file_max_size: Optional[Integer] = None
+    file_name: Optional[String] = None
+    file_type: Optional[Integer] = None
+    flags: Optional[Integer] = None
+    grantor: Optional[String] = None
+    granules: Optional[Integer] = None
+    guid: Optional[String] = None
+    in_progress: Optional[String] = None
+    instance: Optional[String] = None
+    instance_id: Optional[Integer] = None
+    is_default: Optional[Integer] = None
+    job_mode: Optional[String] = None
+    job_version: Optional[String] = None
+    last_file: Optional[Integer] = None
+    last_update: Optional[DateTime] = None
+    load_method: Optional[Integer] = None
+    metadata_buffer_size: Optional[Integer] = None
+    metadata_io: Optional[Integer] = None
+    name: Optional[String] = None
+    object_int_oid: Optional[String] = None
+    object_long_name: Optional[String] = None
+    object_name: Optional[String] = None
+    object_number: Optional[Integer] = None
+    object_path_seqno: Optional[Integer] = None
+    object_row: Optional[Integer] = None
+    object_schema: Optional[String] = None
+    object_tablespace: Optional[String] = None
+    object_type: Optional[String] = None
+    object_type_path: Optional[String] = None
+    objnum: Optional[Integer] = None
+    old_value: Optional[String] = None
+    operation: Optional[String] = None
+    option_tag: Optional[String] = None
+    orig_base_object_name: Optional[String] = None
+    orig_base_object_schema: Optional[String] = None
+    original_object_name: Optional[String] = None
+    original_object_schema: Optional[String] = None
+    packet_number: Optional[Integer] = None
+    parallelization: Optional[Integer] = None
+    parent_object_name: Optional[String] = None
+    parent_object_schema: Optional[String] = None
+    parent_process_order: Optional[Integer] = None
+    partition_name: Optional[String] = None
+    phase: Optional[Integer] = None
+    platform: Optional[String] = None
+    processing_state: Optional[String] = None
+    processing_status: Optional[String] = None
+    process_name: Optional[String] = None
+    process_order: Optional[Integer] = None
+    property: Optional[Integer] = None
+    proxy_schema: Optional[String] = None
+    proxy_view: Optional[String] = None
+    queue_tabnum: Optional[Integer] = None
+    remote_link: Optional[String] = None
+    scn: Optional[Integer] = None
+    seed: Optional[Integer] = None
+    service_name: Optional[String] = None
+    size_estimate: Optional[Integer] = None
+    src_compat: Optional[String] = None
+    start_time: Optional[DateTime] = None
+    state: Optional[String] = None
+    status_queue: Optional[String] = None
+    subpartition_name: Optional[String] = None
+    target_xml_clob: Optional[String] = None
+    tde_rewrapped_key: Optional[String] = None
+    template_table: Optional[String] = None
+    timezone: Optional[String] = None
+    total_bytes: Optional[Integer] = None
+    trigflag: Optional[Integer] = None
+    unload_method: Optional[Integer] = None
+    user_directory: Optional[String] = None
+    user_file_name: Optional[String] = None
+    user_name: Optional[String] = None
+    value_n: Optional[Integer] = None
+    value_t: Optional[String] = None
+    version: Optional[Integer] = None
+    work_item: Optional[String] = None
+    xml_clob: Optional[String] = None
+    xml_process_order: Optional[Integer] = None
+    ekleyen_kullanici_kimlik_no: Optional[String] = None
+    ensonguncelleyen_kullanici_kimlik_no: Optional[String] = None
+    eklenme_zamani: Optional[DateTime] = None
+    enson_guncellenme_zamani: Optional[DateTime] = None
+
+class SysExportFull01Create(SysExportFull01Base):
+    pass
+
+class SysExportFull01(SysExportFull01Base):
+    id: Optional[int]
+
+    class Config:
+        orm_mode = True
